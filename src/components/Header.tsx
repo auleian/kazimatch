@@ -65,7 +65,7 @@ export function Header() {
               </select>
             </label>
           )}
-          <span className={`mode ${mode}`} title={mode === 'firebase' ? 'Connected to Firebase' : 'Firebase not configured — data stays in this browser'}>
+          <span className={`mode ${mode}`} title={mode === 'firebase' ? 'Connected to Firebase' : 'Firebase not configured, so data stays in this browser'}>
             {mode === 'firebase' ? 'Live · Firebase' : 'Local demo'}
           </span>
           <div className="menu" ref={menuRef}>

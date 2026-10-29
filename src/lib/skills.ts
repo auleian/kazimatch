@@ -1,7 +1,7 @@
 /**
  * Skill normalisation. Matching compares *canonical* skill keys so that
  * "ReactJS", "react.js" and "React" all count as the same skill.
- * The alias table is deliberately small and visible — extend it as needed.
+ * The alias table is deliberately small and visible. Extend it as needed.
  */
 const ALIASES: Record<string, string> = {
   js: 'javascript',

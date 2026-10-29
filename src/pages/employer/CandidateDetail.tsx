@@ -124,7 +124,7 @@ export function CandidateDetail() {
           <IconTile icon={<MapPin size={18} />} label="Location" value={cand.location} />
           <IconTile icon={<UserRound size={18} />} label="Experience" value={`${cand.experienceYears} year${cand.experienceYears === 1 ? '' : 's'}`} />
           <IconTile icon={<Clock size={18} />} label="Availability" value={cand.availability.map((a) => AVAILABILITY_LABELS[a]).join(', ')} />
-          <IconTile icon={<Mail size={18} />} label="Email" value={cand.email || '—'} />
+          <IconTile icon={<Mail size={18} />} label="Email" value={cand.email || 'Not provided'} />
           {cand.phone && <IconTile icon={<Phone size={18} />} label="Phone" value={cand.phone} />}
           {opp && (
             <IconTile

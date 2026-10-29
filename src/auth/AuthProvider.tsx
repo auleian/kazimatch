@@ -78,11 +78,11 @@ export function friendlyAuthError(e: unknown): string {
     'auth/unauthorized-domain': 'This domain is not authorised for sign-in. Add it in Firebase console → Authentication → Settings → Authorised domains.',
     'auth/invalid-credential': 'Email or password is incorrect.',
     'auth/wrong-password': 'Email or password is incorrect.',
-    'auth/user-not-found': 'No account with that email — create one instead.',
-    'auth/email-already-in-use': 'That email already has an account — sign in instead.',
+    'auth/user-not-found': 'No account with that email. Create one instead.',
+    'auth/email-already-in-use': 'That email already has an account. Sign in instead.',
     'auth/weak-password': 'Use a password with at least 6 characters.',
     'auth/invalid-email': 'That email address doesn’t look right.',
-    'auth/network-request-failed': 'Network error — check your connection.',
+    'auth/network-request-failed': 'Network error. Check your connection.',
   };
   return map[code] ?? (e instanceof Error ? e.message : 'Sign-in failed. Please try again.');
 }

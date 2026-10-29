@@ -4,7 +4,7 @@ import type { CriterionResult, Fit, Tier } from '../lib/matching';
 import { TIER_LABEL } from '../lib/matching';
 import { skillKey, skillLabel } from '../lib/skills';
 
-/* ---------- Avatar (initials only — no photos of people) ---------- */
+/* ---------- Avatar (initials only, no photos of people) ---------- */
 const GRADIENTS = [
   ['#6d8bff', '#b28dff'],
   ['#38bdf8', '#6d8bff'],
@@ -21,6 +21,7 @@ function hash(s: string) {
 }
 export function Avatar({ name, size = 40 }: { name: string; size?: number }) {
   const [a, b] = GRADIENTS[hash(name) % GRADIENTS.length];
+  size = Math.round(size * 0.8);
   const initials = name
     .split(/\s+/)
     .filter(Boolean)
@@ -130,7 +131,7 @@ export function Disclaimer({ compact = false }: { compact?: boolean }) {
     <div className={`disclaimer ${compact ? 'compact' : ''}`}>
       <Info size={15} />
       <span>
-        Match scores are simple, rule-based guides to <b>support human review</b> — not a guarantee that someone is
+        Match scores are simple, rule-based guides to <b>support human review</b>, not a guarantee that someone is
         suitable. Always read the full profile before deciding.
       </span>
     </div>

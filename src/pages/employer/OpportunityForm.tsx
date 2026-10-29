@@ -129,7 +129,7 @@ export function OpportunityForm() {
         <ArrowLeft size={15} /> Back
       </Link>
       <h1>{existing ? 'Edit requirements' : 'Post a job or gig'}</h1>
-      <p className="muted">Use fictional details for the hackathon demo — don&rsquo;t publish this as a real vacancy.</p>
+      <p className="muted">Use fictional details for the hackathon demo. Don&rsquo;t publish this as a real vacancy.</p>
 
       <form className="card glass-strong form" onSubmit={submit} noValidate>
         <div className="seg big" role="radiogroup" aria-label="Opportunity type">
@@ -164,7 +164,7 @@ export function OpportunityForm() {
           <SkillInput value={form.requiredSkills} onChange={(v) => set('requiredSkills', v)} suggestions={vocab} placeholder="e.g. React, TypeScript" invalid={!!errors.requiredSkills} />
         </Field>
 
-        <Field label="Nice-to-have skills" hint="Optional — adds a small bonus, never hides anyone.">
+        <Field label="Nice-to-have skills" hint="Optional. Adds a small bonus, never hides anyone.">
           <SkillInput value={form.niceToHaveSkills} onChange={(v) => set('niceToHaveSkills', v)} suggestions={vocab} placeholder="e.g. Figma" />
         </Field>
 

@@ -78,7 +78,7 @@ export function Landing() {
         <h1>
           Match the right talent
           <br />
-          to the right work — in minutes.
+          to the right work in minutes.
         </h1>
         <p className="hero-sub">
           Employers post a job or gig and instantly see a ranked shortlist, with a plain-language reason for every
@@ -100,7 +100,7 @@ export function Landing() {
             <p className="muted small">One account works for both the employer and candidate views.</p>
             {mode === 'local' && (
               <div className="note">
-                <b>Local demo mode</b> — Firebase isn&rsquo;t configured, so sign-in is simulated and data stays in this
+                <b>Local demo mode</b>: Firebase isn&rsquo;t configured, so sign-in is simulated and data stays in this
                 browser. Add your Firebase config to <code>.env.local</code> to go live.
               </div>
             )}
@@ -145,11 +145,11 @@ export function Landing() {
 
       <section className="how" id="how">
         <h2>How matching works</h2>
-        <p className="muted">Simple, visible rules — no black box. Scores support human review; they don&rsquo;t decide for you.</p>
+        <p className="muted">Simple, visible rules, no black box. Scores support human review; they don&rsquo;t decide for you.</p>
         <div className="how-grid">
           {[
             ['50 pts', 'Required skills', 'Share of the required skills the candidate lists. Must have at least half to be shown.'],
-            ['20 pts', 'Availability', 'Candidate is open to the type of work needed — full-time, part-time, gig or weekends.'],
+            ['20 pts', 'Availability', 'Candidate is open to the type of work needed: full-time, part-time, gig or weekends.'],
             ['15 pts', 'Location', 'Same town, a remote role, or the candidate is willing to relocate (half points).'],
             ['10 pts', 'Experience', 'Meets the minimum years. One year short earns half points; never hides a candidate.'],
             ['5 pts', 'Nice-to-have', 'Bonus for optional skills, only when the employer lists some.'],

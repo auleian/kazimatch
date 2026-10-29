@@ -71,7 +71,7 @@ export function InviteDialog({ opp, candidate, onClose }: { opp: Opportunity; ca
       await navigator.clipboard.writeText(`Subject: ${subject}\n\n${body}`);
       toast('Invitation copied');
     } catch {
-      toast('Could not copy — select the text and copy it manually', 'err');
+      toast('Could not copy. Select the text and copy it manually', 'err');
     }
   };
 

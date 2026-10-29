@@ -23,7 +23,7 @@ export function OpportunityView() {
     setBusy(true);
     try {
       await store.expressInterest(o.id, me.id, me.ownerId, msg.trim());
-      toast('Interest sent — the employer can see it now');
+      toast('Interest sent. The employer can see it now');
       setMsg('');
     } catch (e) {
       toast((e as Error).message, 'err');

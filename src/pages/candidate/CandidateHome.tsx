@@ -54,7 +54,7 @@ export function CandidateHome() {
               <span className="tile-icon"><Database size={18} /></span>
               <div>
                 <h3>No opportunities yet</h3>
-                <p className="muted small">Load fictional sample data to explore — 12 made-up profiles and 4 sample opportunities.</p>
+                <p className="muted small">Load fictional sample data to explore: 12 made-up profiles and 4 sample opportunities.</p>
               </div>
               <button className="btn btn-dark" onClick={async () => { const n = await store.seedSamples(user!.uid); toast(`Loaded ${n} sample records`); }}>Load samples</button>
             </section>
@@ -96,7 +96,7 @@ export function CandidateHome() {
         {recommended.length === 0 ? (
           <EmptyState icon={<Sparkles size={22} />} title="No strong matches right now">
             {others.length
-              ? 'There are open opportunities, but none meet the must-haves for your profile yet. Adding skills or availability options can help — see "Other open opportunities" below for the reasons.'
+              ? 'There are open opportunities, but none meet the must-haves for your profile yet. Adding skills or availability options can help. See "Other open opportunities" below for the reasons.'
               : 'No open opportunities yet. Check back soon.'}
           </EmptyState>
         ) : (
@@ -152,7 +152,7 @@ export function CandidateHome() {
             {myInterests.map((o) => (
               <Link key={o.id} to={`/candidate/opportunities/${o.id}`} className="list-row glass">
                 <div><b>{o.title}</b> <span className="muted small">· {o.employerName}</span></div>
-                {isShortlisted(o.id, me.id) ? <span className="status status-yes"><BookmarkCheck size={12} /> Shortlisted</span> : <span className="status">Sent — awaiting employer</span>}
+                {isShortlisted(o.id, me.id) ? <span className="status status-yes"><BookmarkCheck size={12} /> Shortlisted</span> : <span className="status">Sent, awaiting employer</span>}
               </Link>
             ))}
           </div>

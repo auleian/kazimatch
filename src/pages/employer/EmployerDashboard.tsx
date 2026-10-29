@@ -1,6 +1,6 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Database, Heart, MapPin, Plus, Search, Sparkles, Users } from 'lucide-react';
+import { ArrowRight, Database, Heart, MapPin, Plus, Search, Users } from 'lucide-react';
 import { useAuth } from '../../auth/AuthProvider';
 import { useData } from '../../data/DataProvider';
 import { rankCandidates, toCriteria } from '../../lib/matching';
@@ -65,7 +65,7 @@ export function EmployerDashboard() {
     <div className="page">
       <section className="search-hero">
         <h1>Find talent</h1>
-        <p className="muted">Describe who you need in plain words — we pick out skills, town and availability using simple rules.</p>
+        <p className="muted">Describe who you need in plain words. We pick out skills, town and availability using simple rules.</p>
         <form className="nl-search glass-strong" onSubmit={onSearch}>
           <span className="nl-plus"><Search size={18} /></span>
           <input
@@ -93,7 +93,7 @@ export function EmployerDashboard() {
             <div>
               <h2>Results for &ldquo;{submitted}&rdquo;</h2>
               <p className="muted small">
-                Understood: {parsed.understood.length ? parsed.understood.join(' · ') : 'nothing specific — showing everyone'}
+                Understood: {parsed.understood.length ? parsed.understood.join(' · ') : 'nothing specific, showing everyone'}
               </p>
             </div>
             <button
@@ -150,7 +150,7 @@ export function EmployerDashboard() {
         </div>
         {mine.length === 0 ? (
           <EmptyState icon={<Plus size={22} />} title="You haven't posted anything yet" action={<Link className="btn btn-dark" to="/employer/new"><Plus size={16} /> Post your first opportunity</Link>}>
-            Post a job or gig with the skills, location and availability you need — matching candidates appear immediately.
+            Post a job or gig with the skills, location and availability you need, and matching candidates appear immediately.
           </EmptyState>
         ) : (
           <div className="opp-grid">

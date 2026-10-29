@@ -99,7 +99,7 @@ export const SAMPLE_OPPORTUNITIES: SampleOpportunity[] = [
   {
     id: 'sample-o01', sample: true, type: 'gig', employerName: 'Kivu Bytes Studio (fictional)',
     title: 'React developer for a 3-week dashboard build',
-    description: 'SAMPLE — not a real vacancy. Help a small studio build an internal sales dashboard: React front end, Firebase backend, charts and a login screen. Three weeks, flexible hours.',
+    description: 'SAMPLE: not a real vacancy. Help a small studio build an internal sales dashboard: React front end, Firebase backend, charts and a login screen. Three weeks, flexible hours.',
     requiredSkills: ['React', 'TypeScript', 'Firebase'], niceToHaveSkills: ['Figma'],
     location: 'Kampala', workMode: 'hybrid', availability: 'gig', minExperienceYears: 2,
     pay: 'UGX 2,400,000 fixed', status: 'open',
@@ -107,7 +107,7 @@ export const SAMPLE_OPPORTUNITIES: SampleOpportunity[] = [
   {
     id: 'sample-o02', sample: true, type: 'gig', employerName: 'Lakeview Events (fictional)',
     title: 'Weekend event photographer',
-    description: 'SAMPLE — not a real vacancy. Photograph two Saturday corporate events and deliver an edited gallery plus a 60-second highlight video within 48 hours.',
+    description: 'SAMPLE: not a real vacancy. Photograph two Saturday corporate events and deliver an edited gallery plus a 60-second highlight video within 48 hours.',
     requiredSkills: ['Photography', 'Video Editing'], niceToHaveSkills: ['Drone Operation'],
     location: 'Kampala', workMode: 'on-site', availability: 'weekends', minExperienceYears: 1,
     pay: 'UGX 350,000 per event', status: 'open',
@@ -115,7 +115,7 @@ export const SAMPLE_OPPORTUNITIES: SampleOpportunity[] = [
   {
     id: 'sample-o03', sample: true, type: 'job', employerName: 'Mpola Solar (fictional)',
     title: 'Solar installation technician',
-    description: 'SAMPLE — not a real vacancy. Install and maintain rooftop solar systems for homes and shops around Wakiso and Kampala. Company transport provided.',
+    description: 'SAMPLE: not a real vacancy. Install and maintain rooftop solar systems for homes and shops around Wakiso and Kampala. Company transport provided.',
     requiredSkills: ['Electrical installation', 'Solar Installation'], niceToHaveSkills: ['CCTV'],
     location: 'Wakiso', workMode: 'on-site', availability: 'full-time', minExperienceYears: 3,
     pay: 'UGX 1,200,000 / month', status: 'open',
@@ -123,7 +123,7 @@ export const SAMPLE_OPPORTUNITIES: SampleOpportunity[] = [
   {
     id: 'sample-o04', sample: true, type: 'job', employerName: 'Nile Bean Coffee Co. (fictional)',
     title: 'Part-time bookkeeper',
-    description: 'SAMPLE — not a real vacancy. Keep the books for a two-branch coffee shop: daily sales reconciliation, mobile-money payouts and a monthly report.',
+    description: 'SAMPLE: not a real vacancy. Keep the books for a two-branch coffee shop: daily sales reconciliation, mobile-money payouts and a monthly report.',
     requiredSkills: ['Bookkeeping', 'Excel'], niceToHaveSkills: ['QuickBooks', 'Mobile Money'],
     location: 'Entebbe', workMode: 'hybrid', availability: 'part-time', minExperienceYears: 2,
     pay: 'UGX 600,000 / month', status: 'open',

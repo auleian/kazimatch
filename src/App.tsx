@@ -57,7 +57,7 @@ export default function App() {
         )}
       </main>
       <footer className="footer">
-        {APP_NAME} · hackathon prototype · use fictional data only — sample profiles and opportunities are not real people or real vacancies.
+        {APP_NAME} · hackathon prototype · use fictional data only. Sample profiles and opportunities are not real people or real vacancies.
       </footer>
     </div>
   );

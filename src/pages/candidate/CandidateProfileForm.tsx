@@ -97,7 +97,7 @@ export function CandidateProfileForm() {
     <div className="page narrow">
       <Link to="/candidate" className="back"><ArrowLeft size={15} /> Back</Link>
       <h1>{target ? (isOwn ? 'Edit your profile' : `Edit sample profile: ${target.name}`) : 'Create your profile'}</h1>
-      <p className="muted">Use fictional details for the demo — please don&rsquo;t paste a real CV.</p>
+      <p className="muted">Use fictional details for the demo. Please don&rsquo;t paste a real CV.</p>
 
       <form className="card glass-strong form" onSubmit={submit} noValidate>
         <div className="grid-2">

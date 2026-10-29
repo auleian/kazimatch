@@ -1,5 +1,5 @@
 /**
- * KaziMatch matching rules — deliberately simple and explainable.
+ * KaziMatch matching rules: deliberately simple and explainable.
  *
  * Every candidate is checked against an opportunity on five criteria. Each
  * criterion earns points out of a fixed weight; the score is the share of
@@ -138,7 +138,7 @@ export function matchCandidate(opp: MatchCriteria, cand: CandidateProfile): Matc
       points: ok ? WEIGHTS.availability : 0,
       fit: ok ? 'yes' : 'no',
       text: ok
-        ? `Available for ${need} work — fits what this ${opp.type} needs.`
+        ? `Available for ${need} work, which fits what this ${opp.type} needs.`
         : `Availability doesn't fit: open to ${availList(cand.availability) || 'nothing listed'}, but this ${opp.type} needs ${need}.`,
       textForCandidate: ok
         ? `Your availability fits: this ${opp.type} needs ${need}.`
@@ -156,10 +156,10 @@ export function matchCandidate(opp: MatchCriteria, cand: CandidateProfile): Matc
     if (opp.workMode === 'remote') {
       fit = 'yes';
       text = `Role is remote, so being based in ${cand.location} works.`;
-      textForCandidate = `This ${opp.type} is remote — location is not a constraint.`;
+      textForCandidate = `This ${opp.type} is remote, so location is not a constraint.`;
     } else if (same) {
       fit = 'yes';
-      text = `Based in ${cand.location} — same place as the ${opp.workMode} role.`;
+      text = `Based in ${cand.location}, the same place as the ${opp.workMode} role.`;
       textForCandidate = `It's in ${opp.location}, where you're based.`;
     } else if (cand.willingToRelocate) {
       fit = 'partial';
@@ -195,15 +195,15 @@ export function matchCandidate(opp: MatchCriteria, cand: CandidateProfile): Matc
       textForCandidate = `No minimum experience required.`;
     } else if (y >= min) {
       fit = 'yes';
-      text = `${yrs(y)} of experience — meets the ${min}-year minimum.`;
+      text = `${yrs(y)} of experience, which meets the ${min}-year minimum.`;
       textForCandidate = `Your ${yrs(y)} of experience meets the ${min}-year minimum.`;
     } else if (y >= min - 1) {
       fit = 'partial';
-      text = `${yrs(y)} of experience — just under the ${min}-year minimum.`;
+      text = `${yrs(y)} of experience, just under the ${min}-year minimum.`;
       textForCandidate = `You're just under the ${min}-year minimum (${yrs(y)}).`;
     } else {
       fit = 'no';
-      text = `${yrs(y)} of experience — below the ${min}-year minimum.`;
+      text = `${yrs(y)} of experience, below the ${min}-year minimum.`;
       textForCandidate = `The ${opp.type} asks for ${yrs(min)}; you have ${yrs(y)}.`;
     }
     criteria.push({
@@ -253,10 +253,10 @@ export function matchCandidate(opp: MatchCriteria, cand: CandidateProfile): Matc
   if (loc?.fit === 'partial') parts.push('would relocate');
   const summary = eligible
     ? `${TIER_LABEL[tier]}: ${fn} ${list(parts)}.`
-    : `Not listed as a match — ${list(blockers)}.`;
+    : `Not listed as a match: ${list(blockers)}.`;
   const summaryForCandidate = eligible
-    ? `${TIER_LABEL[tier]} for you${matchedSkills.length ? ` — you have ${list(matchedSkills)}` : ''}.`
-    : `Not a strong fit yet — ${list(blockers)}.`;
+    ? `${TIER_LABEL[tier]} for you${matchedSkills.length ? `: you have ${list(matchedSkills)}` : ''}.`
+    : `Not a strong fit yet: ${list(blockers)}.`;
 
   return {
     candidate: cand,
@@ -365,7 +365,7 @@ export function suggestRelaxations(opp: MatchCriteria, candidates: CandidateProf
     if (n > 0) out.push({ label: o.label, detail: o.detail, newMatches: n, patch });
   }
   if (out.length === 0) {
-    // No single change helps — try pairs of changes that touch different requirements.
+    // No single change helps, so try pairs of changes that touch different requirements.
     for (let i = 0; i < options.length; i++) {
       for (let j = i + 1; j < options.length; j++) {
         const a = options[i];
