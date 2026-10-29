@@ -13,7 +13,7 @@ import { CandidateHome } from './pages/candidate/CandidateHome';
 import { CandidateProfileForm } from './pages/candidate/CandidateProfileForm';
 import { OpportunityView } from './pages/candidate/OpportunityView';
 
-export const APP_NAME = 'KaziMatch';
+export const APP_NAME = 'Q-sourcing | Flip Africa';
 
 /** Pages for the other role send you home; switching roles means signing out. */
 function Only({ role, children }: { role: View; children: ReactNode }) {

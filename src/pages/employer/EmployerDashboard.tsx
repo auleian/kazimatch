@@ -9,6 +9,15 @@ import { AVAILABILITY_LABELS, WORK_MODE_LABELS, type Opportunity } from '../../l
 import { SUGGESTED_SKILLS } from '../../lib/skills';
 import { CandidateTable } from '../../components/CandidateTable';
 import { Disclaimer, EmptyState, SkillChips, useToast } from '../../components/ui';
+import '../../styles/employer.css';
+
+type OppFilter = 'all' | 'open' | 'closed' | 'interest';
+const OPP_FILTERS: { key: OppFilter; label: string }[] = [
+  { key: 'all', label: 'All' },
+  { key: 'open', label: 'Open' },
+  { key: 'closed', label: 'Closed' },
+  { key: 'interest', label: 'Has interest' },
+];
 
 const EXAMPLES = ['Find me a React developer in Kampala, part-time', 'Photographer for weekends in Kampala', 'Bookkeeper with Excel in Entebbe'];
 
@@ -20,6 +29,7 @@ export function EmployerDashboard() {
   const [q, setQ] = useState('');
   const [submitted, setSubmitted] = useState('');
   const [seeding, setSeeding] = useState(false);
+  const [oppFilter, setOppFilter] = useState<OppFilter>('all');
 
   const mine = opportunities.filter((o) => o.employerId === user?.uid).sort((a, b) => b.createdAt - a.createdAt);
   const hasSamples = candidates.some((c) => c.sample);
@@ -60,6 +70,11 @@ export function EmployerDashboard() {
       interested: interests.filter((s) => s.opportunityId === o.id).length,
     };
   };
+
+  const hasInterest = (o: Opportunity) => interests.some((s) => s.opportunityId === o.id);
+  const oppMatches = (f: OppFilter, o: Opportunity) =>
+    f === 'all' || (f === 'open' && o.status !== 'closed') || (f === 'closed' && o.status === 'closed') || (f === 'interest' && hasInterest(o));
+  const shownOpps = mine.filter((o) => oppMatches(oppFilter, o));
 
   return (
     <div className="page">
@@ -153,9 +168,24 @@ export function EmployerDashboard() {
             Post a job or gig with the skills, location and availability you need, and matching candidates appear immediately.
           </EmptyState>
         ) : (
-          <div className="opp-grid">
-            {mine.map((o) => <OppCard key={o.id} o={o} s={stats(o)} />)}
-          </div>
+          <>
+            {mine.length > 1 && (
+              <div className="emp-filter-pills emp-opp-filter" role="tablist" aria-label="Filter your opportunities">
+                {OPP_FILTERS.map((f) => (
+                  <button key={f.key} role="tab" aria-selected={oppFilter === f.key} className={oppFilter === f.key ? 'on' : ''} onClick={() => setOppFilter(f.key)}>
+                    {f.label} <span className="emp-count">{mine.filter((o) => oppMatches(f.key, o)).length}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {shownOpps.length ? (
+              <div className="opp-grid">
+                {shownOpps.map((o) => <OppCard key={o.id} o={o} s={stats(o)} />)}
+              </div>
+            ) : (
+              <p className="muted small emp-empty">No opportunities in this view.</p>
+            )}
+          </>
         )}
       </section>
     </div>

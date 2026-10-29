@@ -1,0 +1,36 @@
+/* Employer-side filters and reject flow. */
+
+.reject-modal { max-width: 416px; }
+.reject-btn { background: var(--red); color: #fff; border-color: transparent; }
+.reject-btn:hover:not(:disabled) { filter: brightness(0.94); }
+.reject-btn-light { color: var(--red); }
+
+.status.status-rej { color: var(--red); background: var(--red-bg); }
+.status.status-sl { color: var(--blue); background: var(--blue-bg); }
+.reject-reason { display: block; max-width: 220px; margin-top: 3.2px; font-size: 9.6px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.reject-msg { margin: 0; background: var(--red-bg); color: #8a1c1c; padding: 8px 9.6px; border-radius: 9.6px; font-size: 10.8px; display: flex; gap: 6.4px; align-items: flex-start; }
+.reject-msg svg { margin-top: 2.4px; flex-shrink: 0; }
+.reject-note { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: var(--red-bg); color: #8a1c1c; border-radius: 9.6px; padding: 8px 9.6px; font-size: 10.8px; }
+.reject-note > div { flex: 1; min-width: 160px; display: flex; flex-direction: column; gap: 2px; }
+.reject-note span { color: var(--ink-2); }
+
+.ctable tr.row.is-rejected td { opacity: 0.62; }
+.ctable tr.row.is-rejected td.right { opacity: 1; }
+
+.emp-filter { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.emp-filter-pills { display: flex; gap: 3.2px; flex-wrap: wrap; background: #f1f2f6; padding: 3.2px; border-radius: 9.6px; }
+.emp-filter-pills button { border: 0; background: transparent; height: 25.6px; padding: 0 9.6px; border-radius: 7.2px; font-size: 10.4px; color: var(--muted); font-weight: 550; display: inline-flex; align-items: center; gap: 4.8px; }
+.emp-filter-pills button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 2.4px rgba(0, 0, 0, 0.08); }
+.emp-filter-pills button .emp-count { font-size: 9.2px; min-width: 16px; padding: 0 4.8px; height: 15px; line-height: 15px; border-radius: 799px; background: rgba(0, 0, 0, 0.06); color: var(--ink-2); text-align: center; }
+.emp-filter-pills button.on .emp-count { background: var(--ink); color: #fff; }
+.emp-filter-pills button.rej.on .emp-count { background: var(--red); }
+.emp-filter .mini-search input { width: 160px; }
+.emp-filter .mini-search .emp-clear { width: 20px; height: 20px; min-width: 0; padding: 0; }
+.emp-subfilter { display: flex; gap: 6.4px; align-items: center; flex-wrap: wrap; }
+.emp-opp-filter { display: inline-flex; margin-bottom: 9.6px; }
+.emp-empty { padding: 19.2px 8px; text-align: center; }
+
+@media (max-width: 640px) {
+  .emp-filter .mini-search { width: 100%; }
+  .emp-filter .mini-search input { width: 100%; }
+}

@@ -71,7 +71,11 @@ export function createFirestoreStore(db: Firestore): DataStore {
         onSnapshot(collection(db, 'rejections'), (s) => {
           state.rejections = s.docs.map((d) => ({ ...(d.data() as Rejection), id: d.id }));
           fire('rejections');
-        }, err),
+        }, () => {
+          // Older deployed rules don't cover rejections yet; carry on without them instead of failing the whole app.
+          state.rejections = [];
+          fire('rejections');
+        }),
       ];
       return () => unsubs.forEach((u) => u());
     },
@@ -135,7 +139,9 @@ export function createFirestoreStore(db: Firestore): DataStore {
       await setDoc(doc(db, 'rejections', id), clean({
         opportunityId, candidateId, candidateOwnerId, employerId, reason: reason.trim() || undefined, createdAt: Date.now(),
       }));
-      await deleteDoc(doc(db, 'shortlists', id));
+      // Deleting a missing doc fails the rules (no resource to check), so only delete a real entry.
+      const sl = doc(db, 'shortlists', id);
+      if ((await getDoc(sl)).exists()) await deleteDoc(sl);
     },
     async undoRejection(opportunityId, candidateId) {
       await deleteDoc(doc(db, 'rejections', pairId(opportunityId, candidateId)));

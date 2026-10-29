@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, BookmarkCheck, BookmarkPlus, CalendarCheck, Clock, ExternalLink, FolderOpen, Heart, Mail, MapPin, Phone, UserRound } from 'lucide-react';
+import { ArrowLeft, BookmarkCheck, BookmarkPlus, CalendarCheck, Clock, ExternalLink, FolderOpen, Heart, Mail, MapPin, Phone, RotateCcw, UserRound, UserX } from 'lucide-react';
 import { useAuth } from '../../auth/AuthProvider';
 import { useData } from '../../data/DataProvider';
 import { matchCandidate, toCriteria, type CriterionKey } from '../../lib/matching';
 import { AVAILABILITY_LABELS } from '../../lib/types';
 import { safeUrl, shortUrl } from '../../lib/validation';
 import { InviteDialog } from '../../components/InviteDialog';
+import { RejectDialog } from '../../components/RejectDialog';
+import '../../styles/employer.css';
 import { Avatar, Disclaimer, Explanation, IconTile, ScoreBar, ScoreRing, SkillChips, TierBadge, timeAgo, useToast } from '../../components/ui';
 
 const SUB: { key: CriterionKey; label: string; color: string }[] = [
@@ -21,10 +23,11 @@ export function CandidateDetail() {
   const [params] = useSearchParams();
   const nav = useNavigate();
   const { user } = useAuth();
-  const { candidates, opportunities, store, shortlistEntry, interestFor } = useData();
+  const { candidates, opportunities, store, shortlistEntry, interestFor, rejectionFor } = useData();
   const toast = useToast();
   const [busy, setBusy] = useState(false);
   const [inviting, setInviting] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
 
   const cand = candidates.find((c) => c.id === cid);
   const myOpps = opportunities.filter((o) => o.employerId === user?.uid);
@@ -37,6 +40,20 @@ export function CandidateDetail() {
   const slEntry = opp ? shortlistEntry(opp.id, cand.id) : undefined;
   const sl = !!slEntry;
   const interest = opp ? interestFor(opp.id, cand.id) : undefined;
+  const rej = opp ? rejectionFor(opp.id, cand.id) : undefined;
+
+  const undo = async () => {
+    if (!opp) return;
+    setBusy(true);
+    try {
+      await store.undoRejection(opp.id, cand.id);
+      toast(`Rejection undone for ${cand.name}`);
+    } catch (e) {
+      toast((e as Error).message, 'err');
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const toggle = async () => {
     if (!opp) return;
@@ -76,12 +93,12 @@ export function CandidateDetail() {
                   <FolderOpen size={16} /> View portfolio <ExternalLink size={13} />
                 </a>
               )}
-              {canManage && sl && interest && (
+              {canManage && !rej && sl && interest && (
                 <button className="btn btn-dark" onClick={() => setInviting(true)}>
                   {slEntry?.invitedAt ? <><CalendarCheck size={16} /> Invited · send again</> : <><Mail size={16} /> Invite to interview</>}
                 </button>
               )}
-              {canManage && (
+              {canManage && !rej && (
                 <button
                   className={`btn ${sl ? 'btn-light' : 'btn-dark'}`}
                   onClick={toggle}
@@ -91,9 +108,28 @@ export function CandidateDetail() {
                   {sl ? <><BookmarkCheck size={16} /> Shortlisted</> : <><BookmarkPlus size={16} /> Add to shortlist</>}
                 </button>
               )}
+              {canManage && opp && (rej ? (
+                <button className="btn btn-light" onClick={undo} disabled={busy}>
+                  <RotateCcw size={16} /> Undo rejection
+                </button>
+              ) : (
+                <button className="btn btn-light reject-btn-light" onClick={() => setRejecting(true)} disabled={busy}>
+                  <UserX size={16} /> Reject
+                </button>
+              ))}
             </div>
           )}
         </header>
+
+        {rej && opp && (
+          <div className="reject-note" role="status">
+            <UserX size={16} />
+            <div>
+              <b>Rejected for {opp.title} · {timeAgo(rej.createdAt)}</b>
+              <span>{rej.reason ? <>Reason shared with the candidate: &ldquo;{rej.reason}&rdquo;</> : 'No reason given.'}</span>
+            </div>
+          </div>
+        )}
 
         {myOpps.length > 0 && (
           <label className="compare">
@@ -175,6 +211,7 @@ export function CandidateDetail() {
         )}
         <Disclaimer compact />
       </article>
+      {rejecting && opp && <RejectDialog opp={opp} candidate={cand} onClose={() => setRejecting(false)} />}
       {inviting && opp && <InviteDialog opp={opp} candidate={cand} onClose={() => setInviting(false)} />}
     </div>
   );

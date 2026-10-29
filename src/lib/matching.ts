@@ -1,5 +1,5 @@
 /**
- * KaziMatch matching rules: deliberately simple and explainable.
+ * Q-sourcing matching rules: deliberately simple and explainable.
  *
  * Every candidate is checked against an opportunity on five criteria. Each
  * criterion earns points out of a fixed weight; the score is the share of

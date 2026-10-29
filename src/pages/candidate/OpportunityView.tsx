@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, BookmarkCheck, Briefcase, CalendarCheck, Clock, Heart, MapPin, Wallet } from 'lucide-react';
+import { ArrowLeft, BookmarkCheck, Briefcase, CalendarCheck, CircleSlash, Clock, Heart, MapPin, Wallet } from 'lucide-react';
 import { useData } from '../../data/DataProvider';
 import { matchCandidate, toCriteria } from '../../lib/matching';
 import { AVAILABILITY_LABELS, WORK_MODE_LABELS } from '../../lib/types';
 import { Disclaimer, Explanation, ScoreBar, SkillChips, TierBadge, timeAgo, useToast } from '../../components/ui';
+import '../../styles/candidate.css';
 
 export function OpportunityView() {
   const { id } = useParams();
-  const { opportunities, actingCandidate: me, store, interestFor, shortlistEntry } = useData();
+  const { opportunities, actingCandidate: me, store, interestFor, shortlistEntry, rejectionFor } = useData();
   const toast = useToast();
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
@@ -17,6 +18,7 @@ export function OpportunityView() {
   const m = me ? matchCandidate(toCriteria(o), me) : null;
   const interest = me ? interestFor(o.id, me.id) : undefined;
   const shortlist = me ? shortlistEntry(o.id, me.id) : undefined;
+  const rejection = me ? rejectionFor(o.id, me.id) : undefined;
 
   const express = async () => {
     if (!me) return;
@@ -52,6 +54,7 @@ export function OpportunityView() {
           <span className={`badge type-${o.type}`}>{o.type === 'gig' ? 'Gig' : 'Job'}</span>
           {o.sample && <span className="badge">Sample · not a real vacancy</span>}
           {o.status === 'closed' && <span className="badge">Closed</span>}
+          {rejection && <span className="status cand-status-no"><CircleSlash size={12} /> Not selected</span>}
         </div>
         <h1>{o.title}</h1>
         <p className="muted">{o.employerName}</p>
@@ -83,12 +86,22 @@ export function OpportunityView() {
 
       {me ? (
         <section className="card glass-strong interest-box">
-          {shortlist?.invitedAt ? (
+          {rejection ? (
+            <div className="cand-rejected">
+              <span className="tile-icon"><CircleSlash size={18} /></span>
+              <div>
+                <h3>Not selected for this {o.type}</h3>
+                <p className="muted small">{o.employerName} decided not to move forward with your profile {timeAgo(rejection.createdAt)}.</p>
+                <p className="small">{rejection.reason ? <>Employer&rsquo;s note: &ldquo;{rejection.reason}&rdquo;</> : <span className="muted">No reason given</span>}</p>
+                <p className="muted small">Expressing interest is no longer available here, but new matches are waiting on your <Link to="/candidate">opportunities page</Link>.</p>
+              </div>
+            </div>
+          ) : shortlist?.invitedAt ? (
             <div className="note ok"><CalendarCheck size={15} /> The employer invited you to an interview {timeAgo(shortlist.invitedAt)}. Check your email for the details.</div>
           ) : shortlist && (
             <div className="note ok"><BookmarkCheck size={15} /> The employer has added you to their shortlist.</div>
           )}
-          {interest ? (
+          {rejection ? null : interest ? (
             <>
               <div className="interest-done">
                 <span className="tile-icon green"><Heart size={18} /></span>

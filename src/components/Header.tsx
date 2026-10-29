@@ -4,12 +4,13 @@ import { Briefcase, ChevronDown, LogOut, RotateCcw, UserRound } from 'lucide-rea
 import { PROVIDER_LABEL, useAuth } from '../auth/AuthProvider';
 import { useData } from '../data/DataProvider';
 import { Avatar } from './ui';
+import { NotificationBell } from './NotificationBell';
 
 export function Logo() {
   return (
     <Link to="/" className="logo">
       <img src="./favicon.svg" alt="" width={28} height={28} />
-      <span>KaziMatch</span>
+      <span>Q-sourcing <span className="logo-sub">| Flip Africa</span></span>
     </Link>
   );
 }
@@ -59,6 +60,7 @@ export function Header() {
           <span className={`mode ${mode}`} title={mode === 'firebase' ? 'Connected to Firebase' : 'Firebase not configured, so data stays in this browser'}>
             {mode === 'firebase' ? 'Live · Firebase' : 'Local demo'}
           </span>
+          <NotificationBell />
           <div className="menu" ref={menuRef}>
             <button className="menu-btn" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
               <Avatar name={user?.displayName ?? '?'} size={30} />

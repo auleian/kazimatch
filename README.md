@@ -1,4 +1,4 @@
-# KaziMatch: Talent & Gig Matching
+# Q-sourcing | Flip Africa: Talent & Gig Matching
 
 A hackathon prototype that connects employers with job seekers and gig workers. It has two connected views:
 

@@ -14,7 +14,7 @@ export function Welcome() {
   return (
     <div className="welcome">
       <h1>Welcome, {user?.displayName.split(' ')[0]}.</h1>
-      <p className="muted">How will you use KaziMatch? To switch later, sign out and sign in again with the other role.</p>
+      <p className="muted">How will you use Q-sourcing? To switch later, sign out and sign in again with the other role.</p>
       <div className="welcome-grid">
         <button className="welcome-card glass-strong" onClick={() => pick('employer')}>
           <span className="tile-icon lg"><Briefcase size={22} /></span>

@@ -103,7 +103,7 @@ export function Landing() {
 
           <div className="signin glass-strong" id="signin">
             <h2>Sign in to continue</h2>
-            <p className="muted small">Choose how you&rsquo;ll use KaziMatch, then sign in.</p>
+            <p className="muted small">Choose how you&rsquo;ll use Q-sourcing, then sign in.</p>
             <div className="role-pick" role="radiogroup" aria-label="Sign in as">
               <button role="radio" aria-checked={role === 'employer'} className={role === 'employer' ? 'on' : ''} onClick={() => { setRole('employer'); setErr(null); }}>
                 <Briefcase size={16} />

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Briefcase, Clock, Heart, MapPin, Pencil, SearchX, Sparkles, Users, Wallet, Wand2 } from 'lucide-react';
+import { ArrowLeft, Briefcase, Clock, Heart, MapPin, Pencil, Search, SearchX, Users, Wallet, Wand2, X } from 'lucide-react';
 import { useAuth } from '../../auth/AuthProvider';
 import { useData } from '../../data/DataProvider';
 import { rankCandidates, suggestRelaxations, toCriteria, unheldSkills, type MatchCriteria } from '../../lib/matching';
@@ -8,16 +8,36 @@ import { AVAILABILITY_LABELS, WORK_MODE_LABELS } from '../../lib/types';
 import { skillLabel } from '../../lib/skills';
 import { CandidateTable } from '../../components/CandidateTable';
 import { Avatar, Disclaimer, EmptyState, SkillChips, useToast } from '../../components/ui';
+import '../../styles/employer.css';
 
-type Tab = 'matches' | 'shortlist' | 'interested';
+type Filter = 'all' | 'shortlisted' | 'interested' | 'invited' | 'rejected' | 'unreviewed';
+
+const FILTERS: { key: Filter; label: string }[] = [
+  { key: 'all', label: 'All' },
+  { key: 'shortlisted', label: 'Shortlisted' },
+  { key: 'interested', label: 'Interested' },
+  { key: 'invited', label: 'Invited' },
+  { key: 'rejected', label: 'Rejected' },
+  { key: 'unreviewed', label: 'Not reviewed' },
+];
+
+const EMPTY: Record<Filter, string> = {
+  all: 'No candidates match these filters.',
+  shortlisted: 'No one shortlisted yet. Use the bookmark button to add candidates here.',
+  interested: 'No expressions of interest yet. When a candidate taps “I’m interested”, they appear here in real time.',
+  invited: 'No interview invitations sent yet. Shortlisted candidates who are interested can be invited.',
+  rejected: 'No rejected candidates.',
+  unreviewed: 'Everyone has been reviewed.',
+};
 
 export function OpportunityDetail() {
   const { id } = useParams();
   const { user } = useAuth();
-  const { opportunities, candidates, shortlists, interests, store, pruneIneligible } = useData();
+  const { opportunities, candidates, shortlists, interests, rejections, store, pruneIneligible } = useData();
   const toast = useToast();
-  const [tab, setTab] = useState<Tab>('matches');
+  const [filter, setFilter] = useState<Filter>('all');
   const [locFilter, setLocFilter] = useState<string>('All');
+  const [text, setText] = useState('');
 
   // Employers only see opportunities they posted themselves.
   const opp = opportunities.find((o) => o.id === id && o.employerId === user?.uid);
@@ -28,10 +48,38 @@ export function OpportunityDetail() {
   const matches = ranked.filter((r) => r.eligible);
   const shortIds = new Set(shortlists.filter((s) => s.opportunityId === opp.id).map((s) => s.candidateId));
   const intIds = new Set(interests.filter((s) => s.opportunityId === opp.id).map((s) => s.candidateId));
-  const shortlisted = ranked.filter((r) => shortIds.has(r.candidate.id));
-  const interested = ranked.filter((r) => intIds.has(r.candidate.id));
-  const towns = ['All', ...Array.from(new Set(matches.map((r) => r.candidate.location)))];
-  const visible = locFilter === 'All' ? matches : matches.filter((r) => r.candidate.location === locFilter);
+  const rejIds = new Set(rejections.filter((s) => s.opportunityId === opp.id).map((s) => s.candidateId));
+  const invIds = new Set(shortlists.filter((s) => s.opportunityId === opp.id && s.invitedAt).map((s) => s.candidateId));
+  // Everyone the employer can act on: eligible matches plus anyone already shortlisted, interested or rejected.
+  const pool = ranked.filter((r) => r.eligible || shortIds.has(r.candidate.id) || intIds.has(r.candidate.id) || rejIds.has(r.candidate.id));
+  const shortlisted = pool.filter((r) => shortIds.has(r.candidate.id) && !rejIds.has(r.candidate.id));
+  const interested = pool.filter((r) => intIds.has(r.candidate.id) && !rejIds.has(r.candidate.id));
+
+  const towns = ['All', ...Array.from(new Set(pool.map((r) => r.candidate.location)))];
+  const needle = text.trim().toLowerCase();
+  const narrowed = pool.filter((r) => {
+    const c = r.candidate;
+    if (locFilter !== 'All' && c.location !== locFilter) return false;
+    if (!needle) return true;
+    return c.name.toLowerCase().includes(needle) || c.headline.toLowerCase().includes(needle) || c.skills.some((k) => k.toLowerCase().includes(needle));
+  });
+  const inFilter = (f: Filter, id: string) => {
+    const rej = rejIds.has(id);
+    switch (f) {
+      case 'all': return true;
+      case 'shortlisted': return !rej && shortIds.has(id);
+      case 'interested': return !rej && intIds.has(id);
+      case 'invited': return !rej && invIds.has(id);
+      case 'rejected': return rej;
+      case 'unreviewed': return !rej && !shortIds.has(id);
+    }
+  };
+  const counts = Object.fromEntries(FILTERS.map((f) => [f.key, narrowed.filter((r) => inFilter(f.key, r.candidate.id)).length])) as Record<Filter, number>;
+  // Under "All", rejected candidates sink to the bottom so they don't mix in with the recommendations.
+  const visible = narrowed
+    .filter((r) => inFilter(filter, r.candidate.id))
+    .sort((a, b) => (filter === 'all' ? Number(rejIds.has(a.candidate.id)) - Number(rejIds.has(b.candidate.id)) : 0));
+  const statusView = filter !== 'all' && filter !== 'unreviewed';
 
   const applyPatch = async (patch: Partial<MatchCriteria>) => {
     try {
@@ -83,60 +131,62 @@ export function OpportunityDetail() {
         </div>
       </section>
 
-      <div className="tabs" role="tablist">
-        <button role="tab" aria-selected={tab === 'matches'} className={tab === 'matches' ? 'on' : ''} onClick={() => setTab('matches')}>
-          Matches <span className="count">{matches.length}</span>
-        </button>
-        <button role="tab" aria-selected={tab === 'shortlist'} className={tab === 'shortlist' ? 'on' : ''} onClick={() => setTab('shortlist')}>
-          Shortlist <span className="count">{shortlisted.length}</span>
-        </button>
-        <button role="tab" aria-selected={tab === 'interested'} className={tab === 'interested' ? 'on' : ''} onClick={() => setTab('interested')}>
-          Interested <span className="count">{interested.length}</span>
-        </button>
-      </div>
-
       <Disclaimer compact />
 
-      {tab === 'matches' && (
-        matches.length > 0 ? (
-          <section className="card glass-strong">
-            {towns.length > 2 && (
-              <div className="pills">
-                {towns.map((t) => (
-                  <button key={t} className={locFilter === t ? 'on' : ''} onClick={() => setLocFilter(t)}>{t}</button>
-                ))}
-              </div>
-            )}
-            <CandidateTable results={visible} opportunityId={opp.id} employerId={opp.employerId} canShortlist defaultOpen={visible[0]?.candidate.id ?? null} />
-            <p className="muted small table-note">Click a row to see why. Ranked by score; candidates must have at least half the required skills, the right availability and a workable location to be listed.</p>
-          </section>
-        ) : (
-          <NoMatches criteria={criteria} oppId={opp.id} onApply={applyPatch} ranked={ranked} />
-        )
-      )}
-
-      {tab === 'shortlist' && (
-        shortlisted.length ? (
-          <section className="card glass-strong">
-            <CandidateTable results={shortlisted} opportunityId={opp.id} employerId={opp.employerId} canShortlist showInterest />
-          </section>
-        ) : (
-          <EmptyState icon={<Sparkles size={22} />} title="No one shortlisted yet">
-            Use the bookmark button on the Matches tab to add candidates here. You&rsquo;ll see whether each one has expressed interest.
-          </EmptyState>
-        )
-      )}
-
-      {tab === 'interested' && (
-        interested.length ? (
-          <section className="card glass-strong">
-            <CandidateTable results={interested} opportunityId={opp.id} employerId={opp.employerId} canShortlist showInterest />
-          </section>
-        ) : (
-          <EmptyState icon={<Heart size={22} />} title="No expressions of interest yet">
-            When a candidate taps &ldquo;I&rsquo;m interested&rdquo; on this {opp.type}, they appear here in real time.
-          </EmptyState>
-        )
+      {pool.length === 0 ? (
+        <NoMatches criteria={criteria} oppId={opp.id} onApply={applyPatch} ranked={ranked} />
+      ) : (
+        <section className="card glass-strong">
+          <div className="emp-filter">
+            <div className="emp-filter-pills" role="tablist" aria-label="Filter candidates">
+              {FILTERS.map((f) => (
+                <button
+                  key={f.key}
+                  role="tab"
+                  aria-selected={filter === f.key}
+                  className={`${filter === f.key ? 'on' : ''} ${f.key === 'rejected' ? 'rej' : ''}`}
+                  onClick={() => setFilter(f.key)}
+                >
+                  {f.label} <span className="emp-count">{counts[f.key]}</span>
+                </button>
+              ))}
+            </div>
+            <label className="mini-search">
+              <Search size={14} />
+              <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Filter by name or skill" aria-label="Filter candidates by name or skill" />
+              {text && (
+                <button type="button" className="icon-btn ghost emp-clear" onClick={() => setText('')} aria-label="Clear filter">
+                  <X size={12} />
+                </button>
+              )}
+            </label>
+          </div>
+          {towns.length > 2 && (
+            <div className="pills">
+              {towns.map((t) => (
+                <button key={t} className={locFilter === t ? 'on' : ''} onClick={() => setLocFilter(t)}>{t}</button>
+              ))}
+            </div>
+          )}
+          {visible.length ? (
+            <>
+              <CandidateTable
+                key={filter}
+                results={visible}
+                opportunityId={opp.id}
+                employerId={opp.employerId}
+                canShortlist
+                showInterest={statusView}
+                defaultOpen={filter === 'all' ? visible[0]?.candidate.id ?? null : null}
+              />
+              <p className="muted small table-note">
+                Click a row to see why. Ranked by score; matches need at least half the required skills, the right availability and a workable location.
+              </p>
+            </>
+          ) : (
+            <p className="muted small emp-empty">{needle || locFilter !== 'All' ? 'No candidates match these filters.' : EMPTY[filter]}</p>
+          )}
+        </section>
       )}
     </div>
   );
