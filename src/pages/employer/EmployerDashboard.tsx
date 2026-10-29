@@ -75,7 +75,7 @@ export function EmployerDashboard() {
             aria-label="Describe the talent you need"
           />
           <button className="btn btn-dark" type="submit">
-            <Sparkles size={16} /> Search
+             Search
           </button>
         </form>
         <div className="examples">
@@ -177,7 +177,7 @@ function OppCard({ o, s }: { o: Opportunity; s: { matches: number; shortlisted: 
       <SkillChips skills={o.requiredSkills} />
       <div className="opp-stats">
         <span className={s.matches ? 'ok' : 'warn'}><Users size={14} /> {s.matches} match{s.matches === 1 ? '' : 'es'}</span>
-        <span><Sparkles size={14} /> {s.shortlisted} shortlisted</span>
+        <span> {s.shortlisted} shortlisted</span>
         <span><Heart size={14} /> {s.interested} interested</span>
       </div>
     </Link>

@@ -77,7 +77,7 @@ export function OpportunityDetail() {
         </div>
         <div className="opp-head-side">
           <div className="kpi"><Users size={16} /><b>{matches.length}</b><span>matches</span></div>
-          <div className="kpi"><Sparkles size={16} /><b>{shortlisted.length}</b><span>shortlisted</span></div>
+          <div className="kpi"><b>{shortlisted.length}</b><span>shortlisted</span></div>
           <div className="kpi"><Heart size={16} /><b>{interested.length}</b><span>interested</span></div>
           <Link className="btn btn-light" to={`/employer/opportunities/${opp.id}/edit`}><Pencil size={15} /> Edit requirements</Link>
         </div>
