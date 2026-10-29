@@ -4,6 +4,7 @@ import type {
   InterestEntry,
   Opportunity,
   OpportunityInput,
+  PublicProfile,
   ShortlistEntry,
 } from '../lib/types';
 
@@ -20,6 +21,10 @@ export const EMPTY_SNAPSHOT: DataSnapshot = { ready: false, candidates: [], oppo
 export interface DataStore {
   mode: 'firebase' | 'local';
   subscribe(cb: (s: DataSnapshot) => void, onError?: (e: Error) => void): () => void;
+  /** Real (non-sample) profiles without contact details. Works while signed out. */
+  subscribePublicProfiles(cb: (profiles: PublicProfile[]) => void): () => void;
+  /** Mirrors a user's own profile into the public directory. */
+  publishProfile(profile: CandidateProfile): Promise<void>;
   /** id = null creates a new doc. For a user's own profile pass their uid. */
   saveCandidate(id: string | null, data: CandidateInput): Promise<string>;
   saveOpportunity(id: string | null, data: OpportunityInput): Promise<string>;

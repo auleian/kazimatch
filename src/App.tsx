@@ -1,6 +1,7 @@
+import type { ReactNode } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useAuth } from './auth/AuthProvider';
-import { useData } from './data/DataProvider';
+import { useData, type View } from './data/DataProvider';
 import { Header } from './components/Header';
 import { Landing } from './pages/Landing';
 import { Welcome } from './pages/Welcome';
@@ -13,6 +14,12 @@ import { CandidateProfileForm } from './pages/candidate/CandidateProfileForm';
 import { OpportunityView } from './pages/candidate/OpportunityView';
 
 export const APP_NAME = 'KaziMatch';
+
+/** Pages for the other role send you home; switching roles means signing out. */
+function Only({ role, children }: { role: View; children: ReactNode }) {
+  const { view } = useData();
+  return view === role ? <>{children}</> : <Navigate to="/" replace />;
+}
 
 export default function App() {
   const { user, loading } = useAuth();
@@ -43,15 +50,15 @@ export default function App() {
         ) : (
           <Routes location={loc}>
             <Route path="/" element={view ? <Navigate to={`/${view}`} replace /> : <Navigate to="/welcome" replace />} />
-            <Route path="/welcome" element={<Welcome />} />
-            <Route path="/employer" element={<EmployerDashboard />} />
-            <Route path="/employer/new" element={<OpportunityForm />} />
-            <Route path="/employer/opportunities/:id" element={<OpportunityDetail />} />
-            <Route path="/employer/opportunities/:id/edit" element={<OpportunityForm />} />
-            <Route path="/employer/candidates/:cid" element={<CandidateDetail />} />
-            <Route path="/candidate" element={<CandidateHome />} />
-            <Route path="/candidate/profile" element={<CandidateProfileForm />} />
-            <Route path="/candidate/opportunities/:id" element={<OpportunityView />} />
+            <Route path="/welcome" element={view ? <Navigate to={`/${view}`} replace /> : <Welcome />} />
+            <Route path="/employer" element={<Only role="employer"><EmployerDashboard /></Only>} />
+            <Route path="/employer/new" element={<Only role="employer"><OpportunityForm /></Only>} />
+            <Route path="/employer/opportunities/:id" element={<Only role="employer"><OpportunityDetail /></Only>} />
+            <Route path="/employer/opportunities/:id/edit" element={<Only role="employer"><OpportunityForm /></Only>} />
+            <Route path="/employer/candidates/:cid" element={<Only role="employer"><CandidateDetail /></Only>} />
+            <Route path="/candidate" element={<Only role="candidate"><CandidateHome /></Only>} />
+            <Route path="/candidate/profile" element={<Only role="candidate"><CandidateProfileForm /></Only>} />
+            <Route path="/candidate/opportunities/:id" element={<Only role="candidate"><OpportunityView /></Only>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         )}

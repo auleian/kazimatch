@@ -5,6 +5,7 @@
  */
 const ALIASES: Record<string, string> = {
   js: 'javascript',
+  golang: 'go',
   'java script': 'javascript',
   ts: 'typescript',
   reactjs: 'react',

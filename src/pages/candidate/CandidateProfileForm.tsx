@@ -6,7 +6,7 @@ import { useData } from '../../data/DataProvider';
 import { staleForCandidate } from '../../lib/matching';
 import { AVAILABILITY_LABELS, type Availability, type CandidateInput, type CandidateProfile } from '../../lib/types';
 import { KNOWN_LOCATIONS, SUGGESTED_SKILLS, uniqueSkills } from '../../lib/skills';
-import { hasErrors, validateCandidate, type Errors } from '../../lib/validation';
+import { hasErrors, normalizeUrl, validateCandidate, type Errors } from '../../lib/validation';
 import { Field, SkillInput, useToast } from '../../components/ui';
 
 export function CandidateProfileForm() {
@@ -29,6 +29,7 @@ export function CandidateProfileForm() {
           headline: '',
           email: user?.email ?? '',
           phone: '',
+          portfolioUrl: '',
           location: '',
           willingToRelocate: false,
           skills: [],
@@ -65,6 +66,7 @@ export function CandidateProfileForm() {
       headline: form.headline.trim(),
       email: form.email?.trim() || '',
       phone: form.phone?.trim() || '',
+      portfolioUrl: normalizeUrl(form.portfolioUrl ?? ''),
       location: form.location.trim(),
       experienceSummary: form.experienceSummary.trim(),
       skills: uniqueSkills(form.skills),
@@ -142,6 +144,20 @@ export function CandidateProfileForm() {
               </button>
             ))}
           </div>
+        </Field>
+
+        <Field
+          label="Portfolio link (optional)"
+          error={errors.portfolioUrl}
+          hint="Show employers your past work: Behance, GitHub, Dribbble, a website, or a shared Google Drive folder."
+        >
+          <input
+            type="url"
+            inputMode="url"
+            value={form.portfolioUrl ?? ''}
+            onChange={(e) => set('portfolioUrl', e.target.value)}
+            placeholder="e.g. behance.net/yourname"
+          />
         </Field>
 
         <div className="grid-2">

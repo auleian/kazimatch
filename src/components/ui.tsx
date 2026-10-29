@@ -1,10 +1,10 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
-import { Check, CircleAlert, Info, Minus, X } from 'lucide-react';
+import { Check, CircleAlert, Info, Minus, UserRound, X } from 'lucide-react';
 import type { CriterionResult, Fit, Tier } from '../lib/matching';
 import { TIER_LABEL } from '../lib/matching';
 import { skillKey, skillLabel } from '../lib/skills';
 
-/* ---------- Avatar (initials only, no photos of people) ---------- */
+/* ---------- Avatar (person icon only, no photos of people) ---------- */
 const GRADIENTS = [
   ['#6d8bff', '#b28dff'],
   ['#38bdf8', '#6d8bff'],
@@ -22,19 +22,9 @@ function hash(s: string) {
 export function Avatar({ name, size = 40 }: { name: string; size?: number }) {
   const [a, b] = GRADIENTS[hash(name) % GRADIENTS.length];
   size = Math.round(size * 0.8);
-  const initials = name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase())
-    .join('');
   return (
-    <span
-      className="avatar"
-      style={{ width: size, height: size, fontSize: size * 0.38, background: `linear-gradient(135deg, ${a}, ${b})` }}
-      aria-hidden
-    >
-      {initials || '?'}
+    <span className="avatar" style={{ width: size, height: size, background: `linear-gradient(135deg, ${a}, ${b})` }} aria-hidden>
+      <UserRound size={Math.round(size * 0.58)} strokeWidth={2.2} />
     </span>
   );
 }

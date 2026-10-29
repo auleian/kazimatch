@@ -1,5 +1,5 @@
 import type { DataSnapshot, DataStore } from './store';
-import { pairId, type CandidateProfile, type Opportunity } from '../lib/types';
+import { pairId, toPublicProfile, type CandidateProfile, type Opportunity, type PublicProfile } from '../lib/types';
 import { SAMPLE_CANDIDATES, SAMPLE_OPPORTUNITIES } from './seed';
 
 /**
@@ -33,7 +33,12 @@ const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(
 export function createLocalStore(): DataStore {
   let data = read();
   const listeners = new Set<(s: DataSnapshot) => void>();
-  const emit = () => listeners.forEach((l) => l({ ready: true, ...data }));
+  const publicListeners = new Set<(p: PublicProfile[]) => void>();
+  const publicProfiles = () => data.candidates.filter((c) => !c.sample).map(toPublicProfile);
+  const emit = () => {
+    listeners.forEach((l) => l({ ready: true, ...data }));
+    publicListeners.forEach((l) => l(publicProfiles()));
+  };
   const commit = (fn: (d: Data) => void) => {
     data = read();
     fn(data);
@@ -53,6 +58,14 @@ export function createLocalStore(): DataStore {
       listeners.add(cb);
       cb({ ready: true, ...data });
       return () => listeners.delete(cb);
+    },
+    subscribePublicProfiles(cb) {
+      publicListeners.add(cb);
+      cb(publicProfiles());
+      return () => publicListeners.delete(cb);
+    },
+    async publishProfile() {
+      /* local profiles are already visible to this browser */
     },
     async saveCandidate(id, input) {
       const now = Date.now();

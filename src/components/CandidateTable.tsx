@@ -1,8 +1,9 @@
 import { Fragment, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, BookmarkCheck, BookmarkPlus, CalendarCheck, ChevronDown, Heart, Mail } from 'lucide-react';
+import { ArrowUpRight, BookmarkCheck, BookmarkPlus, CalendarCheck, ChevronDown, FolderOpen, Heart, Mail } from 'lucide-react';
 import type { MatchResult } from '../lib/matching';
 import { AVAILABILITY_LABELS } from '../lib/types';
+import { safeUrl } from '../lib/validation';
 import { useData } from '../data/DataProvider';
 import { Avatar, Explanation, ScoreRing, TierBadge, timeAgo, useToast } from './ui';
 import { InviteDialog } from './InviteDialog';
@@ -64,6 +65,7 @@ export function CandidateTable({ results, opportunityId, employerId, canShortlis
             const sl = !!slEntry;
             const interest = opportunityId ? interestFor(opportunityId, c.id) : undefined;
             const isOpen = open === c.id;
+            const portfolio = safeUrl(c.portfolioUrl);
             return (
               <Fragment key={c.id}>
                 <tr className={`row ${isOpen ? 'open' : ''}`} onClick={() => setOpen(isOpen ? null : c.id)}>
@@ -104,6 +106,11 @@ export function CandidateTable({ results, opportunityId, employerId, canShortlis
                   )}
                   <td className="right" onClick={(e) => e.stopPropagation()}>
                     <div className="actions">
+                      {portfolio && (
+                        <a className="icon-btn" href={portfolio} target="_blank" rel="noopener noreferrer" title="Open portfolio" aria-label={`Open ${c.name}'s portfolio in a new tab`}>
+                          <FolderOpen size={16} />
+                        </a>
+                      )}
                       <Link className="icon-btn" to={`/employer/candidates/${c.id}${opportunityId ? `?opp=${opportunityId}` : ''}`} title="View profile" aria-label={`View ${c.name}'s profile`}>
                         <ArrowUpRight size={16} />
                       </Link>

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Briefcase, ChevronDown, LogOut, RotateCcw, UserRound } from 'lucide-react';
 import { PROVIDER_LABEL, useAuth } from '../auth/AuthProvider';
-import { useData, type View } from '../data/DataProvider';
+import { useData } from '../data/DataProvider';
 import { Avatar } from './ui';
 
 export function Logo() {
@@ -16,10 +16,8 @@ export function Logo() {
 
 export function Header() {
   const { user, signOut, mode } = useAuth();
-  const { setView, personas, actingCandidateId, setActingCandidateId, store } = useData();
+  const { view: current, clearView, personas, actingCandidateId, setActingCandidateId, store } = useData();
   const nav = useNavigate();
-  const loc = useLocation();
-  const current: View | null = loc.pathname.startsWith('/employer') ? 'employer' : loc.pathname.startsWith('/candidate') ? 'candidate' : null;
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -31,23 +29,16 @@ export function Header() {
     return () => document.removeEventListener('mousedown', close);
   }, []);
 
-  const go = (v: View) => {
-    setView(v);
-    nav(`/${v}`);
-  };
-
   return (
     <header className="topbar">
       <div className="topbar-inner glass">
         <Logo />
-        <div className="seg" role="tablist" aria-label="Switch view">
-          <button role="tab" aria-selected={current === 'employer'} className={current === 'employer' ? 'on' : ''} onClick={() => go('employer')}>
-            <Briefcase size={15} /> <span>Employer</span>
-          </button>
-          <button role="tab" aria-selected={current === 'candidate'} className={current === 'candidate' ? 'on' : ''} onClick={() => go('candidate')}>
-            <UserRound size={15} /> <span>Candidate</span>
-          </button>
-        </div>
+        {current && (
+          <span className="role-chip" title="Sign out to switch role">
+            {current === 'employer' ? <Briefcase size={13} /> : <UserRound size={13} />}
+            {current === 'employer' ? 'Employer' : 'Candidate'}
+          </span>
+        )}
         <div className="topbar-right">
           {current === 'candidate' && personas.length > 0 && (
             <label className="persona">
@@ -79,6 +70,7 @@ export function Header() {
                   <b>{user?.displayName}</b>
                   <span>{user?.email ?? 'Guest session'}</span>
                   <span className="muted">Signed in with {PROVIDER_LABEL[user?.provider ?? ''] ?? user?.provider}</span>
+                  {current && <span className="muted">Signed in as {current === 'employer' ? 'an employer' : 'a candidate'}. Sign out to switch.</span>}
                 </div>
                 {store.resetLocal && (
                   <button
@@ -90,7 +82,12 @@ export function Header() {
                     <RotateCcw size={15} /> Reset local demo data
                   </button>
                 )}
-                <button onClick={() => signOut().then(() => nav('/'))}>
+                <button
+                  onClick={() => {
+                    clearView();
+                    signOut().then(() => nav('/'));
+                  }}
+                >
                   <LogOut size={15} /> Sign out
                 </button>
               </div>

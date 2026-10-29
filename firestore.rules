@@ -1,7 +1,7 @@
 rules_version = '2';
 
 // KaziMatch security rules (hackathon prototype).
-// - Everyone must be signed in to read anything.
+// - Everyone must be signed in to read anything, except publicProfiles (no contact details).
 // - A candidate profile can only be written by its owner (doc id = uid for real users).
 // - Sample (fictional) candidate profiles are shared demo personas any signed-in user can act as.
 // - Opportunities (sample or not) can only be managed by the employer who posted them.
@@ -26,7 +26,14 @@ service cloud.firestore {
         && d.experienceYears is number && d.experienceYears >= 0 && d.experienceYears <= 60
         && nonEmptyString(d.experienceSummary, 20)
         && d.availability is list && d.availability.size() >= 1
-        && d.willingToRelocate is bool;
+        && d.willingToRelocate is bool
+        && validPortfolio(d);
+    }
+
+    // Optional; when set it must be a plain web link.
+    function validPortfolio(d) {
+      return !('portfolioUrl' in d) || d.portfolioUrl == ''
+        || (d.portfolioUrl is string && d.portfolioUrl.size() <= 300 && d.portfolioUrl.matches('https?://[^ ]+'));
     }
 
     function validOpportunity(d) {
@@ -61,6 +68,18 @@ service cloud.firestore {
         && request.resource.data.ownerId == resource.data.ownerId
         && (resource.data.ownerId == uid() || resource.data.get('sample', false) == true);
       allow delete: if signedIn() && resource.data.ownerId == uid();
+    }
+
+    // Contact-free copy of a real user's profile, shown on the public landing page.
+    match /publicProfiles/{id} {
+      allow read: if true;
+      allow create, update: if signedIn() && id == uid()
+        && request.resource.data.ownerId == uid()
+        && validPortfolio(request.resource.data)
+        && request.resource.data.keys().hasOnly(['id', 'ownerId', 'name', 'headline', 'portfolioUrl', 'location', 'willingToRelocate', 'skills', 'experienceYears', 'experienceSummary', 'availability', 'updatedAt'])
+        && nonEmptyString(request.resource.data.name, 2)
+        && request.resource.data.skills is list;
+      allow delete: if signedIn() && id == uid();
     }
 
     match /opportunities/{id} {

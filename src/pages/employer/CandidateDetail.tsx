@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, BookmarkCheck, BookmarkPlus, CalendarCheck, Clock, Heart, Mail, MapPin, Phone, UserRound } from 'lucide-react';
+import { ArrowLeft, BookmarkCheck, BookmarkPlus, CalendarCheck, Clock, ExternalLink, FolderOpen, Heart, Mail, MapPin, Phone, UserRound } from 'lucide-react';
 import { useAuth } from '../../auth/AuthProvider';
 import { useData } from '../../data/DataProvider';
 import { matchCandidate, toCriteria, type CriterionKey } from '../../lib/matching';
 import { AVAILABILITY_LABELS } from '../../lib/types';
+import { safeUrl, shortUrl } from '../../lib/validation';
 import { InviteDialog } from '../../components/InviteDialog';
 import { Avatar, Disclaimer, Explanation, IconTile, ScoreBar, ScoreRing, SkillChips, TierBadge, timeAgo, useToast } from '../../components/ui';
 
@@ -51,6 +52,8 @@ export function CandidateDetail() {
     }
   };
 
+  const portfolio = safeUrl(cand.portfolioUrl);
+
   return (
     <div className="page narrow">
       <button className="back" onClick={() => (opp ? nav(`/employer/opportunities/${opp.id}`) : nav(-1))}>
@@ -66,21 +69,28 @@ export function CandidateDetail() {
             <p>{cand.location}{cand.willingToRelocate ? ' · willing to relocate' : ''}</p>
             {cand.sample && <span className="badge">Fictional sample profile</span>}
           </div>
-          {canManage && (
+          {(canManage || portfolio) && (
             <div className="pc-actions">
-              {sl && interest && (
+              {portfolio && (
+                <a className="btn btn-light" href={portfolio} target="_blank" rel="noopener noreferrer">
+                  <FolderOpen size={16} /> View portfolio <ExternalLink size={13} />
+                </a>
+              )}
+              {canManage && sl && interest && (
                 <button className="btn btn-dark" onClick={() => setInviting(true)}>
                   {slEntry?.invitedAt ? <><CalendarCheck size={16} /> Invited · send again</> : <><Mail size={16} /> Invite to interview</>}
                 </button>
               )}
-              <button
-                className={`btn ${sl ? 'btn-light' : 'btn-dark'}`}
-                onClick={toggle}
-                disabled={busy || (!sl && !!m && !m.eligible)}
-                title={!sl && m && !m.eligible ? 'This profile does not meet the must-haves for this opportunity' : undefined}
-              >
-                {sl ? <><BookmarkCheck size={16} /> Shortlisted</> : <><BookmarkPlus size={16} /> Add to shortlist</>}
-              </button>
+              {canManage && (
+                <button
+                  className={`btn ${sl ? 'btn-light' : 'btn-dark'}`}
+                  onClick={toggle}
+                  disabled={busy || (!sl && !!m && !m.eligible)}
+                  title={!sl && m && !m.eligible ? 'This profile does not meet the must-haves for this opportunity' : undefined}
+                >
+                  {sl ? <><BookmarkCheck size={16} /> Shortlisted</> : <><BookmarkPlus size={16} /> Add to shortlist</>}
+                </button>
+              )}
             </div>
           )}
         </header>
@@ -126,6 +136,11 @@ export function CandidateDetail() {
           <IconTile icon={<Clock size={18} />} label="Availability" value={cand.availability.map((a) => AVAILABILITY_LABELS[a]).join(', ')} />
           <IconTile icon={<Mail size={18} />} label="Email" value={cand.email || 'Not provided'} />
           {cand.phone && <IconTile icon={<Phone size={18} />} label="Phone" value={cand.phone} />}
+          <IconTile
+            icon={<FolderOpen size={18} />}
+            label="Portfolio"
+            value={portfolio ? <a className="link-out" href={portfolio} target="_blank" rel="noopener noreferrer">{shortUrl(portfolio)} <ExternalLink size={12} /></a> : 'Not provided'}
+          />
           {opp && (
             <IconTile
               icon={<Heart size={18} />}

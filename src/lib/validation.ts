@@ -4,6 +4,29 @@ export type Errors<T> = Partial<Record<keyof T, string>>;
 
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/** "behance.net/amara" → "https://behance.net/amara". Leaves empty input empty. */
+export function normalizeUrl(raw: string): string {
+  const t = raw.trim();
+  if (!t) return '';
+  return /^[a-z][a-z0-9+.-]*:/i.test(t) ? t : `https://${t}`;
+}
+
+/** Returns the URL only if it's a plain http(s) link, so stored data can't smuggle in javascript: links. */
+export function safeUrl(raw: string | undefined): string | null {
+  if (!raw) return null;
+  try {
+    const u = new URL(raw);
+    return (u.protocol === 'https:' || u.protocol === 'http:') && u.hostname.includes('.') ? u.href : null;
+  } catch {
+    return null;
+  }
+}
+
+/** "https://www.behance.net/amara/" → "behance.net/amara" for display. */
+export function shortUrl(url: string): string {
+  return url.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, '');
+}
+
 export function validateCandidate(c: Partial<CandidateInput>): Errors<CandidateInput> {
   const e: Errors<CandidateInput> = {};
   if (!c.name || c.name.trim().length < 2) e.name = 'Enter your full name (at least 2 characters).';
@@ -16,6 +39,8 @@ export function validateCandidate(c: Partial<CandidateInput>): Errors<CandidateI
   if (!c.experienceSummary || c.experienceSummary.trim().length < 20) e.experienceSummary = 'Describe your experience in at least 20 characters.';
   if (!c.availability || c.availability.length === 0) e.availability = 'Choose at least one availability option.';
   if (c.email && !emailRe.test(c.email)) e.email = 'That email address doesn’t look right.';
+  if (c.portfolioUrl && !safeUrl(normalizeUrl(c.portfolioUrl))) e.portfolioUrl = 'Enter a web link, e.g. behance.net/yourname.';
+  else if (c.portfolioUrl && c.portfolioUrl.length > 300) e.portfolioUrl = 'Keep the link under 300 characters.';
   return e;
 }
 

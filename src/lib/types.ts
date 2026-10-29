@@ -24,6 +24,8 @@ export interface CandidateProfile {
   headline: string;
   email?: string;
   phone?: string;
+  /** Optional link to past work (Behance, GitHub, a website, a Drive folder…). */
+  portfolioUrl?: string;
   location: string;
   willingToRelocate: boolean;
   skills: string[];
@@ -32,6 +34,17 @@ export interface CandidateProfile {
   availability: Availability[];
   createdAt: number;
   updatedAt: number;
+}
+
+/** What anyone (signed out included) may see about a candidate: no email or phone. */
+export type PublicProfile = Pick<
+  CandidateProfile,
+  'id' | 'ownerId' | 'name' | 'headline' | 'portfolioUrl' | 'location' | 'willingToRelocate' | 'skills' | 'experienceYears' | 'experienceSummary' | 'availability' | 'updatedAt'
+>;
+
+export function toPublicProfile(c: CandidateProfile): PublicProfile {
+  const { id, ownerId, name, headline, portfolioUrl, location, willingToRelocate, skills, experienceYears, experienceSummary, availability, updatedAt } = c;
+  return { id, ownerId, name, headline, portfolioUrl, location, willingToRelocate, skills, experienceYears, experienceSummary, availability, updatedAt };
 }
 
 export interface Opportunity {

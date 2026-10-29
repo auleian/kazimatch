@@ -10,7 +10,7 @@ import {
   type Firestore,
 } from 'firebase/firestore';
 import type { DataSnapshot, DataStore } from './store';
-import { pairId, type CandidateProfile, type InterestEntry, type Opportunity, type ShortlistEntry } from '../lib/types';
+import { pairId, toPublicProfile, type CandidateProfile, type InterestEntry, type Opportunity, type PublicProfile, type ShortlistEntry } from '../lib/types';
 import { SAMPLE_CANDIDATES, SAMPLE_OPPORTUNITIES } from './seed';
 
 /**
@@ -19,6 +19,7 @@ import { SAMPLE_CANDIDATES, SAMPLE_OPPORTUNITIES } from './seed';
  *   opportunities/{autoId | sample-id}
  *   shortlists/{opportunityId__candidateId}
  *   interests/{opportunityId__candidateId}
+ *   publicProfiles/{uid}  (contact-free copy of a real user's profile, readable by anyone)
  * Every client listens to the four collections in real time, so an employer
  * sees a candidate's expression of interest appear instantly.
  */
@@ -26,8 +27,20 @@ export function createFirestoreStore(db: Firestore): DataStore {
   const clean = <T extends object>(o: T): T =>
     Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as T;
 
+  const publish = (p: CandidateProfile) => setDoc(doc(db, 'publicProfiles', p.id), clean(toPublicProfile(p)));
+
   return {
     mode: 'firebase',
+    subscribePublicProfiles(cb) {
+      return onSnapshot(
+        collection(db, 'publicProfiles'),
+        (s) => cb(s.docs.map((d) => ({ ...(d.data() as PublicProfile), id: d.id }))),
+        () => cb([]),
+      );
+    },
+    async publishProfile(profile) {
+      await publish(profile);
+    },
     subscribe(cb, onError) {
       const state: DataSnapshot = { ready: false, candidates: [], opportunities: [], shortlists: [], interests: [] };
       const loaded = new Set<string>();
@@ -61,7 +74,12 @@ export function createFirestoreStore(db: Firestore): DataStore {
       const ref = id ? doc(db, 'candidates', id) : doc(collection(db, 'candidates'));
       const snap = await getDoc(ref);
       const now = Date.now();
-      await setDoc(ref, clean({ ...input, createdAt: snap.exists() ? snap.data().createdAt : now, updatedAt: now }));
+      const createdAt = snap.exists() ? snap.data().createdAt : now;
+      await setDoc(ref, clean({ ...input, createdAt, updatedAt: now }));
+      // Only a user's own profile (doc id = uid) may be published; the rules refuse anything else.
+      if (!input.sample && ref.id === input.ownerId) {
+        await publish({ ...input, id: ref.id, createdAt, updatedAt: now }).catch(() => undefined);
+      }
       return ref.id;
     },
     async saveOpportunity(id, input) {

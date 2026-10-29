@@ -1,7 +1,9 @@
 import { useState, type FormEvent } from 'react';
-import { Mail, UserRound } from 'lucide-react';
+import { Briefcase, Mail, UserRound } from 'lucide-react';
 import { friendlyAuthError, useAuth, type ProviderId } from '../auth/AuthProvider';
 import { Logo } from '../components/Header';
+import { setPendingRole, type View } from '../data/DataProvider';
+import { TalentMap } from '../components/TalentMap';
 import { Avatar } from '../components/ui';
 
 const GoogleIcon = () => (
@@ -41,8 +43,11 @@ export function Landing() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState<View | null>(null);
 
   const run = async (key: string, fn: () => Promise<void>) => {
+    if (!role) return setErr('Choose whether you are hiring or looking for work first.');
+    setPendingRole(role);
     setErr(null);
     setBusy(key);
     try {
@@ -69,6 +74,7 @@ export function Landing() {
       <nav className="landing-nav glass">
         <Logo />
         <div className="landing-links">
+          <a href="#map">Find talent</a>
           <a href="#how">How matching works</a>
           <a href="#signin">Sign in</a>
         </div>
@@ -97,7 +103,19 @@ export function Landing() {
 
           <div className="signin glass-strong" id="signin">
             <h2>Sign in to continue</h2>
-            <p className="muted small">One account works for both the employer and candidate views.</p>
+            <p className="muted small">Choose how you&rsquo;ll use KaziMatch, then sign in.</p>
+            <div className="role-pick" role="radiogroup" aria-label="Sign in as">
+              <button role="radio" aria-checked={role === 'employer'} className={role === 'employer' ? 'on' : ''} onClick={() => { setRole('employer'); setErr(null); }}>
+                <Briefcase size={16} />
+                <b>Employer</b>
+                <span>I&rsquo;m hiring</span>
+              </button>
+              <button role="radio" aria-checked={role === 'candidate'} className={role === 'candidate' ? 'on' : ''} onClick={() => { setRole('candidate'); setErr(null); }}>
+                <UserRound size={16} />
+                <b>Candidate</b>
+                <span>I&rsquo;m looking for work</span>
+              </button>
+            </div>
             {mode === 'local' && (
               <div className="note">
                 <b>Local demo mode</b>: Firebase isn&rsquo;t configured, so sign-in is simulated and data stays in this
@@ -142,6 +160,8 @@ export function Landing() {
           </div>
         </div>
       </section>
+
+      <TalentMap />
 
       <section className="how" id="how">
         <h2>How matching works</h2>
