@@ -5,6 +5,7 @@ import type {
   Opportunity,
   OpportunityInput,
   PublicProfile,
+  Rejection,
   ShortlistEntry,
 } from '../lib/types';
 
@@ -14,9 +15,10 @@ export interface DataSnapshot {
   opportunities: Opportunity[];
   shortlists: ShortlistEntry[];
   interests: InterestEntry[];
+  rejections: Rejection[];
 }
 
-export const EMPTY_SNAPSHOT: DataSnapshot = { ready: false, candidates: [], opportunities: [], shortlists: [], interests: [] };
+export const EMPTY_SNAPSHOT: DataSnapshot = { ready: false, candidates: [], opportunities: [], shortlists: [], interests: [], rejections: [] };
 
 export interface DataStore {
   mode: 'firebase' | 'local';
@@ -38,6 +40,9 @@ export interface DataStore {
   markInvited(opportunityId: string, candidateId: string): Promise<void>;
   expressInterest(opportunityId: string, candidateId: string, candidateOwnerId: string, message: string): Promise<void>;
   withdrawInterest(opportunityId: string, candidateId: string): Promise<void>;
+  /** Employer rejects a candidate for one opportunity (also takes them off its shortlist). */
+  rejectCandidate(opportunityId: string, candidateId: string, candidateOwnerId: string, employerId: string, reason: string): Promise<void>;
+  undoRejection(opportunityId: string, candidateId: string): Promise<void>;
   /** Loads fictional sample candidates & opportunities. Returns how many docs were added. */
   seedSamples(uid: string): Promise<number>;
   resetLocal?(): void;

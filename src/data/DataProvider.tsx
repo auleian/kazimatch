@@ -5,7 +5,7 @@ import { createFirestoreStore } from './firestoreStore';
 import { db, firebaseEnabled } from './firebase';
 import { useAuth } from '../auth/AuthProvider';
 import { staleEntries, staleForCandidate, type MatchCriteria } from '../lib/matching';
-import { pairId, type CandidateProfile, type PublicProfile, type ShortlistEntry } from '../lib/types';
+import { pairId, type CandidateProfile, type PublicProfile, type Rejection, type ShortlistEntry } from '../lib/types';
 
 export type View = 'employer' | 'candidate';
 
@@ -29,6 +29,7 @@ interface DataCtx extends DataSnapshot {
   /** Same, from the candidate's side: call after a profile changes. */
   pruneCandidate(candidate: CandidateProfile): Promise<{ shortlists: number; interests: number }>;
   interestFor(oppId: string, candId: string): DataSnapshot['interests'][number] | undefined;
+  rejectionFor(oppId: string, candId: string): Rejection | undefined;
   /** The role chosen at sign-in. Fixed for the session; signing out clears it. */
   view: View | null;
   setView(v: View): void;
@@ -127,6 +128,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const actingCandidate = personas.find((p) => p.id === actingId2) ?? null;
     const sl = new Map(snap.shortlists.map((s) => [s.id, s]));
     const ints = new Map(snap.interests.map((i) => [i.id, i]));
+    const rejs = new Map(snap.rejections.map((r) => [r.id, r]));
     return {
       ...snap,
       store,
@@ -152,6 +154,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         };
       },
       interestFor: (o, c) => ints.get(pairId(o, c)),
+      rejectionFor: (o, c) => rejs.get(pairId(o, c)),
       view,
       setView,
       clearView,

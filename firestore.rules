@@ -102,6 +102,17 @@ service cloud.firestore {
         && (canManageOpportunity(resource.data.opportunityId) || canActAsCandidate(resource.data.candidateId));
     }
 
+    // Only the employer who posted the opportunity can reject (or un-reject) a candidate for it.
+    match /rejections/{id} {
+      allow read: if signedIn();
+      allow create, update: if signedIn()
+        && id == request.resource.data.opportunityId + '__' + request.resource.data.candidateId
+        && request.resource.data.employerId == uid()
+        && canManageOpportunity(request.resource.data.opportunityId)
+        && (!('reason' in request.resource.data) || (request.resource.data.reason is string && request.resource.data.reason.size() <= 500));
+      allow delete: if signedIn() && canManageOpportunity(resource.data.opportunityId);
+    }
+
     match /interests/{id} {
       allow read: if signedIn();
       allow create, update: if signedIn()

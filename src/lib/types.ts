@@ -87,6 +87,18 @@ export interface InterestEntry {
   createdAt: number;
 }
 
+/** An employer turned a candidate down for one opportunity. The candidate is notified. */
+export interface Rejection {
+  id: string; // `${opportunityId}__${candidateId}`
+  opportunityId: string;
+  candidateId: string;
+  candidateOwnerId: string;
+  employerId: string;
+  /** Optional reason shared with the candidate. */
+  reason?: string;
+  createdAt: number;
+}
+
 export type CandidateInput = Omit<CandidateProfile, 'id' | 'createdAt' | 'updatedAt'>;
 export type OpportunityInput = Omit<Opportunity, 'id' | 'createdAt' | 'updatedAt'>;
 

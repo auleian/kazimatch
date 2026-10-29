@@ -13,11 +13,11 @@ type Data = Omit<DataSnapshot, 'ready'>;
 function read(): Data {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) return { rejections: [], ...JSON.parse(raw) };
   } catch {
     /* ignore */
   }
-  return { candidates: [], opportunities: [], shortlists: [], interests: [] };
+  return { candidates: [], opportunities: [], shortlists: [], interests: [], rejections: [] };
 }
 
 function write(d: Data) {
@@ -97,6 +97,7 @@ export function createLocalStore(): DataStore {
         d.opportunities = d.opportunities.filter((o) => o.id !== id);
         d.shortlists = d.shortlists.filter((s) => s.opportunityId !== id);
         d.interests = d.interests.filter((s) => s.opportunityId !== id);
+        d.rejections = d.rejections.filter((s) => s.opportunityId !== id);
       });
     },
     async addToShortlist(opportunityId, candidateId, employerId) {
@@ -139,6 +140,20 @@ export function createLocalStore(): DataStore {
         d.interests = d.interests.filter((s) => s.id !== id);
       });
     },
+    async rejectCandidate(opportunityId, candidateId, candidateOwnerId, employerId, reason) {
+      const id = pairId(opportunityId, candidateId);
+      commit((d) => {
+        d.rejections = d.rejections.filter((r) => r.id !== id);
+        d.rejections.push({ id, opportunityId, candidateId, candidateOwnerId, employerId, reason: reason.trim() || undefined, createdAt: Date.now() });
+        d.shortlists = d.shortlists.filter((s) => s.id !== id);
+      });
+    },
+    async undoRejection(opportunityId, candidateId) {
+      const id = pairId(opportunityId, candidateId);
+      commit((d) => {
+        d.rejections = d.rejections.filter((r) => r.id !== id);
+      });
+    },
     async seedSamples(ownerUid) {
       let added = 0;
       const now = Date.now();
@@ -157,7 +172,7 @@ export function createLocalStore(): DataStore {
       return added;
     },
     resetLocal() {
-      data = { candidates: [], opportunities: [], shortlists: [], interests: [] };
+      data = { candidates: [], opportunities: [], shortlists: [], interests: [], rejections: [] };
       write(data);
       emit();
     },

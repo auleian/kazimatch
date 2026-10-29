@@ -10,7 +10,7 @@ import {
   type Firestore,
 } from 'firebase/firestore';
 import type { DataSnapshot, DataStore } from './store';
-import { pairId, toPublicProfile, type CandidateProfile, type InterestEntry, type Opportunity, type PublicProfile, type ShortlistEntry } from '../lib/types';
+import { pairId, toPublicProfile, type CandidateProfile, type InterestEntry, type Opportunity, type PublicProfile, type Rejection, type ShortlistEntry } from '../lib/types';
 import { SAMPLE_CANDIDATES, SAMPLE_OPPORTUNITIES } from './seed';
 
 /**
@@ -19,6 +19,7 @@ import { SAMPLE_CANDIDATES, SAMPLE_OPPORTUNITIES } from './seed';
  *   opportunities/{autoId | sample-id}
  *   shortlists/{opportunityId__candidateId}
  *   interests/{opportunityId__candidateId}
+ *   rejections/{opportunityId__candidateId}
  *   publicProfiles/{uid}  (contact-free copy of a real user's profile, readable by anyone)
  * Every client listens to the four collections in real time, so an employer
  * sees a candidate's expression of interest appear instantly.
@@ -42,11 +43,11 @@ export function createFirestoreStore(db: Firestore): DataStore {
       await publish(profile);
     },
     subscribe(cb, onError) {
-      const state: DataSnapshot = { ready: false, candidates: [], opportunities: [], shortlists: [], interests: [] };
+      const state: DataSnapshot = { ready: false, candidates: [], opportunities: [], shortlists: [], interests: [], rejections: [] };
       const loaded = new Set<string>();
       const fire = (name: string) => {
         loaded.add(name);
-        state.ready = loaded.size === 4;
+        state.ready = loaded.size === 5;
         cb({ ...state });
       };
       const err = (e: Error) => onError?.(e);
@@ -66,6 +67,10 @@ export function createFirestoreStore(db: Firestore): DataStore {
         onSnapshot(collection(db, 'interests'), (s) => {
           state.interests = s.docs.map((d) => ({ ...(d.data() as InterestEntry), id: d.id }));
           fire('interests');
+        }, err),
+        onSnapshot(collection(db, 'rejections'), (s) => {
+          state.rejections = s.docs.map((d) => ({ ...(d.data() as Rejection), id: d.id }));
+          fire('rejections');
         }, err),
       ];
       return () => unsubs.forEach((u) => u());
@@ -124,6 +129,16 @@ export function createFirestoreStore(db: Firestore): DataStore {
     },
     async withdrawInterest(opportunityId, candidateId) {
       await deleteDoc(doc(db, 'interests', pairId(opportunityId, candidateId)));
+    },
+    async rejectCandidate(opportunityId, candidateId, candidateOwnerId, employerId, reason) {
+      const id = pairId(opportunityId, candidateId);
+      await setDoc(doc(db, 'rejections', id), clean({
+        opportunityId, candidateId, candidateOwnerId, employerId, reason: reason.trim() || undefined, createdAt: Date.now(),
+      }));
+      await deleteDoc(doc(db, 'shortlists', id));
+    },
+    async undoRejection(opportunityId, candidateId) {
+      await deleteDoc(doc(db, 'rejections', pairId(opportunityId, candidateId)));
     },
     async seedSamples(ownerUid) {
       const now = Date.now();
