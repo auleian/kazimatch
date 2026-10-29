@@ -1,0 +1,96 @@
+rules_version = '2';
+
+// KaziMatch security rules (hackathon prototype).
+// - Everyone must be signed in to read anything.
+// - A candidate profile can only be written by its owner (doc id = uid for real users).
+// - Sample (fictional) candidate profiles are shared demo personas any signed-in user can act as.
+// - Opportunities (sample or not) can only be managed by the employer who posted them.
+// - Only the employer who posted an opportunity can shortlist for it; a candidate can remove
+//   themselves from a shortlist when they edit their profile and no longer qualify.
+// - Only the candidate (profile owner) can express or withdraw interest; the employer can also
+//   clear interest on their own opportunity when the candidate no longer meets its requirements.
+// - Required fields are validated here too, not just in the UI.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function uid() { return request.auth.uid; }
+    function nonEmptyString(v, min) { return v is string && v.size() >= min; }
+
+    function validCandidate(d) {
+      return d.keys().hasAll(['ownerId', 'name', 'headline', 'location', 'skills', 'experienceYears', 'experienceSummary', 'availability', 'willingToRelocate'])
+        && nonEmptyString(d.name, 2)
+        && nonEmptyString(d.headline, 3)
+        && nonEmptyString(d.location, 1)
+        && d.skills is list && d.skills.size() >= 1 && d.skills.size() <= 30
+        && d.experienceYears is number && d.experienceYears >= 0 && d.experienceYears <= 60
+        && nonEmptyString(d.experienceSummary, 20)
+        && d.availability is list && d.availability.size() >= 1
+        && d.willingToRelocate is bool;
+    }
+
+    function validOpportunity(d) {
+      return d.keys().hasAll(['employerId', 'employerName', 'type', 'title', 'description', 'requiredSkills', 'niceToHaveSkills', 'location', 'workMode', 'availability', 'minExperienceYears', 'status'])
+        && d.type in ['job', 'gig']
+        && nonEmptyString(d.title, 3)
+        && nonEmptyString(d.employerName, 1)
+        && nonEmptyString(d.description, 30)
+        && d.requiredSkills is list && d.requiredSkills.size() >= 1 && d.requiredSkills.size() <= 15
+        && d.niceToHaveSkills is list
+        && nonEmptyString(d.location, 1)
+        && d.workMode in ['on-site', 'hybrid', 'remote']
+        && d.availability in ['full-time', 'part-time', 'gig', 'weekends']
+        && d.minExperienceYears is number && d.minExperienceYears >= 0 && d.minExperienceYears <= 40
+        && d.status in ['open', 'closed'];
+    }
+
+    function candidate(id) { return get(/databases/$(database)/documents/candidates/$(id)).data; }
+    function opportunity(id) { return get(/databases/$(database)/documents/opportunities/$(id)).data; }
+    function canActAsCandidate(id) {
+      let c = candidate(id);
+      return c.ownerId == uid() || c.get('sample', false) == true;
+    }
+    function canManageOpportunity(id) { return opportunity(id).employerId == uid(); }
+
+    match /candidates/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn() && validCandidate(request.resource.data)
+        && ((id == uid() && request.resource.data.ownerId == uid())
+            || (request.resource.data.get('sample', false) == true && id.matches('sample-.*')));
+      allow update: if signedIn() && validCandidate(request.resource.data)
+        && request.resource.data.ownerId == resource.data.ownerId
+        && (resource.data.ownerId == uid() || resource.data.get('sample', false) == true);
+      allow delete: if signedIn() && resource.data.ownerId == uid();
+    }
+
+    match /opportunities/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn() && validOpportunity(request.resource.data)
+        && request.resource.data.employerId == uid();
+      allow update: if signedIn() && validOpportunity(request.resource.data)
+        && request.resource.data.employerId == resource.data.employerId
+        && resource.data.employerId == uid();
+      allow delete: if signedIn() && resource.data.employerId == uid();
+    }
+
+    match /shortlists/{id} {
+      allow read: if signedIn();
+      allow create, update: if signedIn()
+        && id == request.resource.data.opportunityId + '__' + request.resource.data.candidateId
+        && canManageOpportunity(request.resource.data.opportunityId);
+      // The candidate may also take themselves off a shortlist (e.g. their profile changed and they no longer qualify).
+      allow delete: if signedIn()
+        && (canManageOpportunity(resource.data.opportunityId) || canActAsCandidate(resource.data.candidateId));
+    }
+
+    match /interests/{id} {
+      allow read: if signedIn();
+      allow create, update: if signedIn()
+        && id == request.resource.data.opportunityId + '__' + request.resource.data.candidateId
+        && canActAsCandidate(request.resource.data.candidateId);
+      // The employer may also clear interest when they change requirements and the candidate no longer qualifies.
+      allow delete: if signedIn()
+        && (canActAsCandidate(resource.data.candidateId) || canManageOpportunity(resource.data.opportunityId));
+    }
+  }
+}
